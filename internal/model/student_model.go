@@ -7,3 +7,20 @@ type StudentRegisterRequest struct {
 	Password string `json:"password" validate:"required,max=100"`
 	Status   string `json:"status" validate:"required,max=100"`
 }
+type StudentUpdateRequest struct {
+	Nis    string `json:"nis" validate:"omitempty,max=100"`
+	Name   string `json:"name" validate:"omitempty,max=100"`
+	Email  string `json:"email" validate:"omitempty,email,max=100"`
+	Status string `json:"status" validate:"omitempty,max=100"`
+}
+type StudentLoginRequest struct {
+	Nis      string `json:"nis" validate:"required,max=100"`
+	Password string `json:"password" validate:"required,max=100"`
+}
+type StudentResponse struct {
+	Id     string `json:"id"`
+	Nis    string `json:"nis"`
+	Name   string `json:"name"`
+	Email  string `json:"email"`
+	Status string `json:"status"`
+}

@@ -9,11 +9,23 @@ import (
 type RouteConfig struct {
 	App            *fiber.App
 	StudentHandler handler.StudentHandler
+	AuthHandler    handler.AuthHandler
+	TeacherHandler handler.TeacherHandler
 }
 
 func (r *RouteConfig) Setup() {
 	api := r.App.Group("/api")
 
 	student := api.Group("/students")
+	student.Get("/", r.StudentHandler.FindAllStudent)
+	student.Get("/:studentId", r.StudentHandler.FindStudentById)
 	student.Post("/", r.StudentHandler.AddStudent)
+	student.Post("/login", r.AuthHandler.StudentLogin)
+	student.Put("/:studentId", r.StudentHandler.UpdateStudent)
+
+	teacher := api.Group("teachers")
+	teacher.Post("/", r.TeacherHandler.AddTeacher)
+	teacher.Put("/:teacherId", r.TeacherHandler.UpdateTeacher)
+	teacher.Get("/:teacherId", r.TeacherHandler.FindTeacherById)
+	teacher.Get("/", r.TeacherHandler.FindAllTeacher)
 }

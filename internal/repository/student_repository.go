@@ -2,6 +2,7 @@ package repository
 
 import (
 	"liva/internal/entity"
+	"liva/internal/model"
 
 	"gorm.io/gorm"
 )
@@ -13,6 +14,8 @@ type StudentRepository interface {
 	CountByNis(nis string) (int64, error)
 	CountById(studentId string) (int64, error)
 	CountByEmail(email string) (int64, error)
+	FindAll() ([]entity.Student, error)
+	Updates(studentId string, request *model.StudentUpdateRequest) error
 }
 type studentRepository struct {
 	db *gorm.DB
@@ -23,6 +26,17 @@ func NewStudentRepository(db *gorm.DB) StudentRepository {
 }
 func (r *studentRepository) Save(student entity.Student) error {
 	return r.db.Save(&student).Error
+}
+func (r *studentRepository) Updates(studentId string, request *model.StudentUpdateRequest) error {
+	return r.db.Model(&entity.Student{}).Where("id = ?", studentId).Updates(request).Error
+}
+func (r *studentRepository) FindAll() ([]entity.Student, error) {
+	var students []entity.Student
+	err := r.db.Find(&students).Error
+	if err != nil {
+		return nil, err
+	}
+	return students, nil
 }
 func (r *studentRepository) FindById(studentId string) (*entity.Student, error) {
 	student := new(entity.Student)

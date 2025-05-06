@@ -24,17 +24,24 @@ type Bootstrap struct {
 func New(config *Bootstrap) {
 	// repository
 	studentRepository := repository.NewStudentRepository(config.DB)
+	teacherRepository := repository.NewTeacherRepository(config.DB)
 
 	// service
 	studentService := service.NewStudentService(studentRepository, config.Validation, config.Log)
+	authService := service.NewAuthService(studentRepository, config.Validation, config.Log, config.Viper)
+	teacherService := service.NewTeacherService(teacherRepository, config.Validation, config.Log)
 
 	// handler
 	studentHandler := handler.NewStudentHandler(studentService)
+	authHandler := handler.NewAuthHandler(authService)
+	teacherHadnler := handler.NewTeacherHandler(teacherService)
 
 	// routes
 	route := &router.RouteConfig{
 		App:            config.App,
 		StudentHandler: studentHandler,
+		AuthHandler:    authHandler,
+		TeacherHandler: teacherHadnler,
 	}
 	route.Setup()
 }

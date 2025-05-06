@@ -15,6 +15,9 @@ import (
 
 type StudentService interface {
 	AddStudent(request *model.StudentRegisterRequest) error
+	FindStudentById(studentId string) (*model.StudentResponse, error)
+	FindAllStudent() ([]entity.Student, error)
+	UpdateStudent(studentId string, request *model.StudentUpdateRequest) error
 }
 type studentService struct {
 	studentRepository repository.StudentRepository
@@ -71,6 +74,49 @@ func (s *studentService) AddStudent(request *model.StudentRegisterRequest) error
 	err = s.studentRepository.Save(*student)
 	if err != nil {
 		s.log.WithError(err).Error("failed save student to database")
+		return err
+	}
+	return nil
+}
+func (s *studentService) FindStudentById(studentId string) (*model.StudentResponse, error) {
+	student, err := s.studentRepository.FindById(studentId)
+	if err != nil {
+		s.log.WithError(err).Warn("student not found")
+		return nil, exception.NewError(404, "student not found")
+	}
+	response := &model.StudentResponse{
+		Id:     student.Id,
+		Nis:    student.Nis,
+		Name:   student.Name,
+		Email:  student.Email,
+		Status: student.Status,
+	}
+	return response, nil
+}
+func (s *studentService) FindAllStudent() ([]entity.Student, error) {
+	students, err := s.studentRepository.FindAll()
+	if err != nil {
+		s.log.WithError(err).Warn("student not found")
+		return nil, exception.NewError(404, "student not found")
+	}
+	return students, nil
+}
+func (s *studentService) UpdateStudent(studentId string, request *model.StudentUpdateRequest) error {
+	if err := s.validation.Struct(request); err != nil {
+		s.log.WithError(err).Warn("failed validation")
+		return err
+	}
+	countId, err := s.studentRepository.CountById(studentId)
+	if err != nil {
+		s.log.WithError(err).Error("failed count id from database")
+		return err
+	}
+	if countId < 1 {
+		return exception.NewError(404, "student not found")
+	}
+	err = s.studentRepository.Updates(studentId, request)
+	if err != nil {
+		s.log.WithError(err).Error("failed update student to database")
 		return err
 	}
 	return nil
