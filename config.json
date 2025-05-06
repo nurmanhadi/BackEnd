@@ -1,6 +1,6 @@
 {
     "app": {
-        "name": "microservice golang fiber auth service",
+        "name": "sistem administrasi sekolah",
         "version": "1.0.0"
     },
     "server": {
