@@ -21,20 +21,23 @@ type Bootstrap struct {
 	Viper      *viper.Viper
 }
 
-func New(config *Bootstrap) {
+func New(config *Bootstrap) { // dependency injection
 	// repository
 	studentRepository := repository.NewStudentRepository(config.DB)
 	teacherRepository := repository.NewTeacherRepository(config.DB)
+	classRepository := repository.NewClassRepository(config.DB)
 
 	// service
 	studentService := service.NewStudentService(studentRepository, config.Validation, config.Log)
 	authService := service.NewAuthService(studentRepository, config.Validation, config.Log, config.Viper)
 	teacherService := service.NewTeacherService(teacherRepository, config.Validation, config.Log)
+	classService := service.NewClassService(classRepository, teacherRepository, config.Validation, config.Log)
 
 	// handler
 	studentHandler := handler.NewStudentHandler(studentService)
 	authHandler := handler.NewAuthHandler(authService)
 	teacherHadnler := handler.NewTeacherHandler(teacherService)
+	classHandler := handler.NewClassHandler(classService)
 
 	// routes
 	route := &router.RouteConfig{
@@ -42,6 +45,7 @@ func New(config *Bootstrap) {
 		StudentHandler: studentHandler,
 		AuthHandler:    authHandler,
 		TeacherHandler: teacherHadnler,
+		ClassHandler:   classHandler,
 	}
 	route.Setup()
 }
