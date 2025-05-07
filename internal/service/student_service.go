@@ -14,7 +14,7 @@ import (
 )
 
 type StudentService interface {
-	AddStudent(request *model.StudentRegisterRequest) error
+	AddStudent(request *model.StudentAddRequest) error
 	FindStudentById(studentId string) (*model.StudentResponse, error)
 	FindAllStudent() ([]entity.Student, error)
 	UpdateStudent(studentId string, request *model.StudentUpdateRequest) error
@@ -32,7 +32,7 @@ func NewStudentService(studentRepository repository.StudentRepository, validatio
 		validation:        validation,
 	}
 }
-func (s *studentService) AddStudent(request *model.StudentRegisterRequest) error {
+func (s *studentService) AddStudent(request *model.StudentAddRequest) error {
 	if err := s.validation.Struct(request); err != nil {
 		s.log.WithError(err).Warn("failed validation")
 		return err
@@ -66,6 +66,7 @@ func (s *studentService) AddStudent(request *model.StudentRegisterRequest) error
 	student := &entity.Student{
 		Id:       studentId,
 		Nis:      request.Nis,
+		ClassId:  request.ClassId,
 		Name:     newName,
 		Email:    newEmail,
 		Password: string(newPassword),
@@ -85,11 +86,12 @@ func (s *studentService) FindStudentById(studentId string) (*model.StudentRespon
 		return nil, exception.NewError(404, "student not found")
 	}
 	response := &model.StudentResponse{
-		Id:     student.Id,
-		Nis:    student.Nis,
-		Name:   student.Name,
-		Email:  student.Email,
-		Status: student.Status,
+		Id:      student.Id,
+		Nis:     student.Nis,
+		ClassId: student.ClassId,
+		Name:    student.Name,
+		Email:   student.Email,
+		Status:  student.Status,
 	}
 	return response, nil
 }

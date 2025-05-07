@@ -1,7 +1,8 @@
 package model
 
-type StudentRegisterRequest struct {
+type StudentAddRequest struct {
 	Nis      string `json:"nis" validate:"required,max=100"`
+	ClassId  int    `json:"class_id"`
 	Name     string `json:"name" validate:"required,max=100"`
 	Email    string `json:"email" validate:"required,email,max=100"`
 	Password string `json:"password" validate:"required,max=100"`
@@ -18,9 +19,10 @@ type StudentLoginRequest struct {
 	Password string `json:"password" validate:"required,max=100"`
 }
 type StudentResponse struct {
-	Id     string `json:"id"`
-	Nis    string `json:"nis"`
-	Name   string `json:"name"`
-	Email  string `json:"email"`
-	Status string `json:"status"`
+	Id      string `json:"id"`
+	Nis     string `json:"nis"`
+	ClassId int    `json:"class_id"`
+	Name    string `json:"name"`
+	Email   string `json:"email"`
+	Status  string `json:"status"`
 }

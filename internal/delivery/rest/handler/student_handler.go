@@ -23,7 +23,7 @@ func NewStudentHandler(studenService service.StudentService) StudentHandler {
 }
 
 func (h *studentHandler) AddStudent(c *fiber.Ctx) error {
-	request := new(model.StudentRegisterRequest)
+	request := new(model.StudentAddRequest)
 	if err := c.BodyParser(&request); err != nil {
 		return exception.NewError(400, "failed parse to json")
 	}
