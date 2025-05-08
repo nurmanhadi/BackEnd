@@ -1,0 +1,10 @@
+CREATE TABLE schedules (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    class_id INT NOT NULL,
+    subject_id INT NOT NULL,
+    timetable DATETIME NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_schedules_classes FOREIGN KEY (class_id) REFERENCES classes(id),
+    CONSTRAINT fk_schedules_subjects FOREIGN KEY (subject_id) REFERENCES subjects(id)
+);
