@@ -12,6 +12,7 @@ type RouteConfig struct {
 	AuthHandler    handler.AuthHandler
 	TeacherHandler handler.TeacherHandler
 	ClassHandler   handler.ClassHandler
+	SubjectHandler handler.SubjectHandler
 }
 
 func (r *RouteConfig) Setup() {
@@ -35,4 +36,10 @@ func (r *RouteConfig) Setup() {
 	class.Put("/:classId", r.ClassHandler.UpdateClass)
 	class.Get("/:classId", r.ClassHandler.FindClassById)
 	class.Get("/", r.ClassHandler.FindAllClass)
+
+	subject := api.Group("/subjects")
+	subject.Post("/", r.SubjectHandler.AddSubject)
+	subject.Get("/", r.SubjectHandler.FindAll)
+	subject.Get("/:subjectId", r.SubjectHandler.FindById)
+	subject.Put("/:subjectId", r.SubjectHandler.UpdateSubject)
 }

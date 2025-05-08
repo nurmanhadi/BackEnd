@@ -26,18 +26,21 @@ func New(config *Bootstrap) { // dependency injection
 	studentRepository := repository.NewStudentRepository(config.DB)
 	teacherRepository := repository.NewTeacherRepository(config.DB)
 	classRepository := repository.NewClassRepository(config.DB)
+	subjectRepository := repository.NewSubjectRepository(config.DB)
 
 	// service
 	studentService := service.NewStudentService(studentRepository, config.Validation, config.Log)
 	authService := service.NewAuthService(studentRepository, config.Validation, config.Log, config.Viper)
 	teacherService := service.NewTeacherService(teacherRepository, config.Validation, config.Log)
 	classService := service.NewClassService(classRepository, teacherRepository, config.Validation, config.Log)
+	subjectService := service.NewSubjectService(subjectRepository, teacherRepository, config.Validation, config.Log)
 
 	// handler
 	studentHandler := handler.NewStudentHandler(studentService)
 	authHandler := handler.NewAuthHandler(authService)
 	teacherHadnler := handler.NewTeacherHandler(teacherService)
 	classHandler := handler.NewClassHandler(classService)
+	subjectHandler := handler.NewSubjectHandler(subjectService)
 
 	// routes
 	route := &router.RouteConfig{
@@ -46,6 +49,7 @@ func New(config *Bootstrap) { // dependency injection
 		AuthHandler:    authHandler,
 		TeacherHandler: teacherHadnler,
 		ClassHandler:   classHandler,
+		SubjectHandler: subjectHandler,
 	}
 	route.Setup()
 }
