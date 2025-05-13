@@ -7,13 +7,14 @@ import (
 )
 
 type RouteConfig struct {
-	App             *fiber.App
-	StudentHandler  handler.StudentHandler
-	AuthHandler     handler.AuthHandler
-	TeacherHandler  handler.TeacherHandler
-	ClassHandler    handler.ClassHandler
-	SubjectHandler  handler.SubjectHandler
-	ScheduleHandler handler.ScheduleHandler
+	App               *fiber.App
+	StudentHandler    handler.StudentHandler
+	AuthHandler       handler.AuthHandler
+	TeacherHandler    handler.TeacherHandler
+	ClassHandler      handler.ClassHandler
+	SubjectHandler    handler.SubjectHandler
+	ScheduleHandler   handler.ScheduleHandler
+	AttendanceHandler handler.AttendaceHandler
 }
 
 func (r *RouteConfig) Setup() {
@@ -49,4 +50,10 @@ func (r *RouteConfig) Setup() {
 	schadule.Put("/:scheduleId", r.ScheduleHandler.UpdateSchedule)
 	schadule.Get("/:scheduleId", r.ScheduleHandler.FindById)
 	schadule.Get("/", r.ScheduleHandler.FindAll)
+
+	attendace := api.Group("/attendances")
+	attendace.Post("/", r.AttendanceHandler.AddAttendance)
+	attendace.Put("/:attendaceId", r.AttendanceHandler.UpdateAttendance)
+	attendace.Get("/:attendaceId", r.AttendanceHandler.FindById)
+	attendace.Get("/", r.AttendanceHandler.FindAll)
 }

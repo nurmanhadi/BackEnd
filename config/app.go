@@ -28,6 +28,7 @@ func New(config *Bootstrap) { // dependency injection
 	classRepository := repository.NewClassRepository(config.DB)
 	subjectRepository := repository.NewSubjectRepository(config.DB)
 	scheduleRepository := repository.NewScheduleRepository(config.DB)
+	attendaceRepository := repository.NewAttendaceRepository(config.DB)
 
 	// service
 	studentService := service.NewStudentService(studentRepository, config.Validation, config.Log)
@@ -36,6 +37,7 @@ func New(config *Bootstrap) { // dependency injection
 	classService := service.NewClassService(classRepository, teacherRepository, config.Validation, config.Log)
 	subjectService := service.NewSubjectService(subjectRepository, teacherRepository, config.Validation, config.Log)
 	scheduleService := service.NewScheduleService(scheduleRepository, classRepository, subjectRepository, config.Validation, config.Log)
+	attendaceService := service.NewAttendaceService(attendaceRepository, studentRepository, scheduleRepository, config.Validation, config.Log)
 
 	// handler
 	studentHandler := handler.NewStudentHandler(studentService)
@@ -44,16 +46,18 @@ func New(config *Bootstrap) { // dependency injection
 	classHandler := handler.NewClassHandler(classService)
 	subjectHandler := handler.NewSubjectHandler(subjectService)
 	scheduleHandler := handler.NewScheduleHandler(scheduleService)
+	attendaceHandler := handler.NewAttendaceHandler(attendaceService)
 
 	// routes
 	route := &router.RouteConfig{
-		App:             config.App,
-		StudentHandler:  studentHandler,
-		AuthHandler:     authHandler,
-		TeacherHandler:  teacherHadnler,
-		ClassHandler:    classHandler,
-		SubjectHandler:  subjectHandler,
-		ScheduleHandler: scheduleHandler,
+		App:               config.App,
+		StudentHandler:    studentHandler,
+		AuthHandler:       authHandler,
+		TeacherHandler:    teacherHadnler,
+		ClassHandler:      classHandler,
+		SubjectHandler:    subjectHandler,
+		ScheduleHandler:   scheduleHandler,
+		AttendanceHandler: attendaceHandler,
 	}
 	route.Setup()
 }
