@@ -10,4 +10,5 @@ type Subject struct {
 	UpdatedAt time.Time  `json:"updated_at"`
 	Teacher   *Teacher   `json:"teacher"`
 	Schedules []Schedule `json:"schedules"`
+	Grades    []Grade    `json:"grades"`
 }

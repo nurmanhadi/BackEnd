@@ -29,6 +29,7 @@ func New(config *Bootstrap) { // dependency injection
 	subjectRepository := repository.NewSubjectRepository(config.DB)
 	scheduleRepository := repository.NewScheduleRepository(config.DB)
 	attendaceRepository := repository.NewAttendaceRepository(config.DB)
+	gradeRepository := repository.NewGradeRepository(config.DB)
 
 	// service
 	studentService := service.NewStudentService(studentRepository, config.Validation, config.Log)
@@ -38,6 +39,7 @@ func New(config *Bootstrap) { // dependency injection
 	subjectService := service.NewSubjectService(subjectRepository, teacherRepository, config.Validation, config.Log)
 	scheduleService := service.NewScheduleService(scheduleRepository, classRepository, subjectRepository, config.Validation, config.Log)
 	attendaceService := service.NewAttendaceService(attendaceRepository, studentRepository, scheduleRepository, config.Validation, config.Log)
+	gradeService := service.NewGradeService(gradeRepository, studentRepository, subjectRepository, config.Validation, config.Log)
 
 	// handler
 	studentHandler := handler.NewStudentHandler(studentService)
@@ -47,6 +49,7 @@ func New(config *Bootstrap) { // dependency injection
 	subjectHandler := handler.NewSubjectHandler(subjectService)
 	scheduleHandler := handler.NewScheduleHandler(scheduleService)
 	attendaceHandler := handler.NewAttendaceHandler(attendaceService)
+	gradeHandler := handler.NewGradeHandler(gradeService)
 
 	// routes
 	route := &router.RouteConfig{
@@ -58,6 +61,7 @@ func New(config *Bootstrap) { // dependency injection
 		SubjectHandler:    subjectHandler,
 		ScheduleHandler:   scheduleHandler,
 		AttendanceHandler: attendaceHandler,
+		GradeHandler:      gradeHandler,
 	}
 	route.Setup()
 }

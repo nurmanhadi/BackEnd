@@ -1,4 +1,3 @@
-DROP TABLE attendances;
 CREATE TABLE attendances (
     id BIGINT PRIMARY KEY AUTO_INCREMENT NOT NULL,
     student_id VARCHAR(36) NOT NULL,

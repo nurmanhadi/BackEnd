@@ -14,4 +14,5 @@ type Student struct {
 	UpdatedAt  time.Time    `json:"updated_at"`
 	Class      *Class       `json:"class"`
 	Attendaces []Attendance `json:"attendaces"`
+	Grades     []Grade      `json:"grades"`
 }

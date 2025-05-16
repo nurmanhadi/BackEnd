@@ -15,6 +15,7 @@ type RouteConfig struct {
 	SubjectHandler    handler.SubjectHandler
 	ScheduleHandler   handler.ScheduleHandler
 	AttendanceHandler handler.AttendaceHandler
+	GradeHandler      handler.GradeHandler
 }
 
 func (r *RouteConfig) Setup() {
@@ -56,4 +57,10 @@ func (r *RouteConfig) Setup() {
 	attendace.Put("/:attendaceId", r.AttendanceHandler.UpdateAttendance)
 	attendace.Get("/:attendaceId", r.AttendanceHandler.FindById)
 	attendace.Get("/", r.AttendanceHandler.FindAll)
+
+	grade := api.Group("/grades")
+	grade.Post("/", r.GradeHandler.AddGrade)
+	grade.Get("/", r.GradeHandler.FindAll)
+	grade.Get("/:gradeId", r.GradeHandler.FindById)
+	grade.Put("/:gradeId", r.GradeHandler.UpdateGrade)
 }
