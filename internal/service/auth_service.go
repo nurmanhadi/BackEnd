@@ -12,49 +12,50 @@ import (
 )
 
 type AuthService interface {
-	StudentLogin(request *model.StudentLoginRequest) (*model.TokenResponse, error)
+	UserLogin(request *model.AuthLoginRequest) (*model.AuthResponse, error)
 }
 type authService struct {
-	studentRepository repository.StudentRepository
-	validation        *validator.Validate
-	log               *logrus.Logger
-	viper             *viper.Viper
+	userRepository repository.UserRepository
+	validation     *validator.Validate
+	log            *logrus.Logger
+	viper          *viper.Viper
 }
 
 func NewAuthService(
-	studentRepository repository.StudentRepository,
+	userRepository repository.UserRepository,
 	validation *validator.Validate,
 	log *logrus.Logger,
 	viper *viper.Viper,
 ) AuthService {
 	return &authService{
-		studentRepository: studentRepository,
-		validation:        validation,
-		log:               log,
-		viper:             viper,
+		userRepository: userRepository,
+		validation:     validation,
+		log:            log,
+		viper:          viper,
 	}
 }
-func (s *authService) StudentLogin(request *model.StudentLoginRequest) (*model.TokenResponse, error) {
+func (s *authService) UserLogin(request *model.AuthLoginRequest) (*model.AuthResponse, error) {
 	if err := s.validation.Struct(request); err != nil {
 		s.log.WithError(err).Warn("failed validation request")
 		return nil, err
 	}
-	student, err := s.studentRepository.FindByNis(request.Nis)
+	user, err := s.userRepository.FindByIdentifier(request.Identifier)
 	if err != nil {
-		s.log.WithError(err).Warn("failed find student from database")
-		return nil, exception.NewError(400, "nis or password wrong")
+		s.log.WithError(err).Warn("failed find user from database")
+		return nil, exception.NewError(400, "identifier or password wrong")
 	}
-	if err := bcrypt.CompareHashAndPassword([]byte(student.Password), []byte(request.Password)); err != nil {
-		s.log.WithError(err).Warn("failed find student from database")
-		return nil, exception.NewError(400, "nis or password wrong")
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password)); err != nil {
+		s.log.WithError(err).Warn("failed compare hash password")
+		return nil, exception.NewError(400, "identifier or password wrong")
 	}
-	token, err := JwtGenerateToken(student.Id, []byte(s.viper.GetString("jwt.key")))
+	token, err := JwtGenerateToken(user.Id, user.ReferenceId, user.Role, []byte(s.viper.GetString("jwt.key")))
 	if err != nil {
 		s.log.WithError(err).Error("failed generate token jwt")
 		return nil, err
 	}
-	response := &model.TokenResponse{
+
+	return &model.AuthResponse{
 		Token: token,
-	}
-	return response, nil
+		Role:  user.Role,
+	}, nil
 }

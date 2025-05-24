@@ -4,6 +4,7 @@ import (
 	"liva/internal/entity"
 	"liva/internal/model"
 	"liva/internal/repository"
+	"liva/pkg"
 	"liva/pkg/exception"
 	"strings"
 
@@ -21,17 +22,20 @@ type TeacherService interface {
 }
 type teacherService struct {
 	teacherRepository repository.TeacherRepository
+	userRepository    repository.UserRepository
 	validation        *validator.Validate
 	log               *logrus.Logger
 }
 
 func NewTeacherService(
 	teacherRepository repository.TeacherRepository,
+	userRepository repository.UserRepository,
 	validation *validator.Validate,
 	log *logrus.Logger,
 ) TeacherService {
 	return &teacherService{
 		teacherRepository: teacherRepository,
+		userRepository:    userRepository,
 		validation:        validation,
 		log:               log,
 	}
@@ -50,16 +54,42 @@ func (s *teacherService) AddTeacher(request model.TeacherAddRequest) error {
 		s.log.Warn("nip alradry exists")
 		return exception.NewError(409, "nip already exists")
 	}
+	teacherId := uuid.NewString()
 	newPassword, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
 	if err != nil {
 		s.log.WithError(err).Error("failed generate hash password")
 		return err
 	}
+	countIdentifier, err := s.userRepository.CountByIdentifier(request.Nip)
+	if err != nil {
+		s.log.WithError(err).Error("failed count identifier from database")
+		return err
+	}
+	if countIdentifier > 0 {
+		return exception.NewError(409, "identifier already exists")
+	}
+	countReference, err := s.userRepository.CountByReferenceId(teacherId)
+	if err != nil {
+		s.log.WithError(err).Error("failed count reference_id from database")
+		return err
+	}
+	if countReference > 0 {
+		return exception.NewError(409, "reference_id already exists")
+	}
+	if err := s.userRepository.Save(&entity.User{
+		Id:          uuid.NewString(),
+		Identifier:  request.Nip,
+		Password:    string(newPassword),
+		Role:        string(pkg.RoleTeacher),
+		ReferenceId: teacherId,
+	}); err != nil {
+		s.log.WithError(err).Error("failed save user to database")
+		return err
+	}
 	teacher := &entity.Teacher{
-		Id:       uuid.NewString(),
-		Nip:      request.Nip,
-		Name:     strings.ToUpper(request.Name),
-		Password: string(newPassword),
+		Id:   teacherId,
+		Nip:  request.Nip,
+		Name: strings.ToUpper(request.Name),
 	}
 	if err := s.teacherRepository.Save(*teacher); err != nil {
 		s.log.WithError(err).Error("failed save teacher to database")

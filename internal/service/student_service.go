@@ -4,6 +4,7 @@ import (
 	"liva/internal/entity"
 	"liva/internal/model"
 	"liva/internal/repository"
+	"liva/pkg"
 	"liva/pkg/exception"
 	"strings"
 
@@ -21,13 +22,15 @@ type StudentService interface {
 }
 type studentService struct {
 	studentRepository repository.StudentRepository
+	userRepository    repository.UserRepository
 	validation        *validator.Validate
 	log               *logrus.Logger
 }
 
-func NewStudentService(studentRepository repository.StudentRepository, validation *validator.Validate, log *logrus.Logger) StudentService {
+func NewStudentService(studentRepository repository.StudentRepository, userRepository repository.UserRepository, validation *validator.Validate, log *logrus.Logger) StudentService {
 	return &studentService{
 		studentRepository: studentRepository,
+		userRepository:    userRepository,
 		log:               log,
 		validation:        validation,
 	}
@@ -46,16 +49,6 @@ func (s *studentService) AddStudent(request *model.StudentAddRequest) error {
 		return exception.NewError(409, "nis already exists")
 	}
 	studentId := uuid.NewString()
-	newEmail := strings.ToLower(request.Email)
-	countEmail, err := s.studentRepository.CountByEmail(newEmail)
-	if err != nil {
-		s.log.WithError(err).Error("failed count email from database")
-
-		return err
-	}
-	if countEmail > 0 {
-		return exception.NewError(400, "email already exists")
-	}
 	newName := strings.ToUpper(request.Name)
 	newPassword, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -63,14 +56,38 @@ func (s *studentService) AddStudent(request *model.StudentAddRequest) error {
 
 		return err
 	}
+	countIdentifier, err := s.userRepository.CountByIdentifier(request.Nis)
+	if err != nil {
+		s.log.WithError(err).Error("failed count identifier from database")
+		return err
+	}
+	if countIdentifier > 0 {
+		return exception.NewError(409, "identifier already exists")
+	}
+	countReference, err := s.userRepository.CountByReferenceId(studentId)
+	if err != nil {
+		s.log.WithError(err).Error("failed count reference_id from database")
+		return err
+	}
+	if countReference > 0 {
+		return exception.NewError(409, "reference_id already exists")
+	}
+	if err := s.userRepository.Save(&entity.User{
+		Id:          uuid.NewString(),
+		Identifier:  request.Nis,
+		Password:    string(newPassword),
+		Role:        string(pkg.RoleStudent),
+		ReferenceId: studentId,
+	}); err != nil {
+		s.log.WithError(err).Error("failed save user to database")
+		return err
+	}
 	student := &entity.Student{
-		Id:       studentId,
-		Nis:      request.Nis,
-		ClassId:  request.ClassId,
-		Name:     newName,
-		Email:    newEmail,
-		Password: string(newPassword),
-		Status:   request.Status,
+		Id:      studentId,
+		Nis:     request.Nis,
+		ClassId: request.ClassId,
+		Name:    newName,
+		Status:  request.Status,
 	}
 	err = s.studentRepository.Save(*student)
 	if err != nil {
@@ -90,7 +107,6 @@ func (s *studentService) FindStudentById(studentId string) (*model.StudentRespon
 		Nis:     student.Nis,
 		ClassId: student.ClassId,
 		Name:    student.Name,
-		Email:   student.Email,
 		Status:  student.Status,
 	}
 	return response, nil

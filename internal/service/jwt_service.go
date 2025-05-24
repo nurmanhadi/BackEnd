@@ -7,9 +7,11 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func JwtGenerateToken(id string, key []byte) (string, error) {
+func JwtGenerateToken(id string, rerefenceId string, role string, key []byte) (string, error) {
 	claims := model.JwtCustomClaims{
-		Id: id,
+		Id:          id,
+		RerefenceId: rerefenceId,
+		Role:        role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add((time.Hour * 24) * 7)),
 		},
@@ -29,7 +31,9 @@ func JwtVerifyToken(tokenString string, key []byte) (*model.JwtCustomClaims, err
 	}
 	claims := token.Claims.(*model.JwtCustomClaims)
 	claimType := &model.JwtCustomClaims{
-		Id: claims.Id,
+		Id:          claims.Id,
+		RerefenceId: claims.RerefenceId,
+		Role:        claims.Role,
 	}
 	return claimType, nil
 }

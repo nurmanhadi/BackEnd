@@ -21,11 +21,13 @@ type RouteConfig struct {
 func (r *RouteConfig) Setup() {
 	api := r.App.Group("/api")
 
+	auth := api.Group("/auth")
+	auth.Post("/login", r.AuthHandler.UserLogin)
+
 	student := api.Group("/students")
 	student.Get("/", r.StudentHandler.FindAllStudent)
 	student.Get("/:studentId", r.StudentHandler.FindStudentById)
 	student.Post("/", r.StudentHandler.AddStudent)
-	student.Post("/login", r.AuthHandler.StudentLogin)
 	student.Put("/:studentId", r.StudentHandler.UpdateStudent)
 
 	teacher := api.Group("teachers")

@@ -2,6 +2,7 @@ package config
 
 import (
 	"liva/internal/delivery/rest/handler"
+	"liva/internal/delivery/rest/middleware"
 	"liva/internal/delivery/rest/router"
 	"liva/internal/repository"
 	"liva/internal/service"
@@ -23,6 +24,7 @@ type Bootstrap struct {
 
 func New(config *Bootstrap) { // dependency injection
 	// repository
+	userRepository := repository.NewUserRepository(config.DB)
 	studentRepository := repository.NewStudentRepository(config.DB)
 	teacherRepository := repository.NewTeacherRepository(config.DB)
 	classRepository := repository.NewClassRepository(config.DB)
@@ -32,9 +34,9 @@ func New(config *Bootstrap) { // dependency injection
 	gradeRepository := repository.NewGradeRepository(config.DB)
 
 	// service
-	studentService := service.NewStudentService(studentRepository, config.Validation, config.Log)
-	authService := service.NewAuthService(studentRepository, config.Validation, config.Log, config.Viper)
-	teacherService := service.NewTeacherService(teacherRepository, config.Validation, config.Log)
+	studentService := service.NewStudentService(studentRepository, userRepository, config.Validation, config.Log)
+	authService := service.NewAuthService(userRepository, config.Validation, config.Log, config.Viper)
+	teacherService := service.NewTeacherService(teacherRepository, userRepository, config.Validation, config.Log)
 	classService := service.NewClassService(classRepository, teacherRepository, config.Validation, config.Log)
 	subjectService := service.NewSubjectService(subjectRepository, teacherRepository, config.Validation, config.Log)
 	scheduleService := service.NewScheduleService(scheduleRepository, classRepository, subjectRepository, config.Validation, config.Log)
@@ -50,6 +52,15 @@ func New(config *Bootstrap) { // dependency injection
 	scheduleHandler := handler.NewScheduleHandler(scheduleService)
 	attendaceHandler := handler.NewAttendaceHandler(attendaceService)
 	gradeHandler := handler.NewGradeHandler(gradeService)
+
+	// middleware
+	middleware := middleware.MiddlewareConfig{
+		App:   config.App,
+		Log:   config.Log,
+		Viper: config.Viper,
+	}
+	middleware.Application()
+	middleware.Auth()
 
 	// routes
 	route := &router.RouteConfig{
