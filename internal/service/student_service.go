@@ -46,6 +46,7 @@ func (s *studentService) AddStudent(request *model.StudentAddRequest) error {
 		return err
 	}
 	if countNis > 0 {
+		s.log.Warn("nis already exists")
 		return exception.NewError(409, "nis already exists")
 	}
 	studentId := uuid.NewString()
@@ -53,7 +54,6 @@ func (s *studentService) AddStudent(request *model.StudentAddRequest) error {
 	newPassword, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
 	if err != nil {
 		s.log.WithError(err).Error("failed hash password from bcrypt")
-
 		return err
 	}
 	countIdentifier, err := s.userRepository.CountByIdentifier(request.Nis)
@@ -62,6 +62,7 @@ func (s *studentService) AddStudent(request *model.StudentAddRequest) error {
 		return err
 	}
 	if countIdentifier > 0 {
+		s.log.Warn("identifier already exists")
 		return exception.NewError(409, "identifier already exists")
 	}
 	countReference, err := s.userRepository.CountByReferenceId(studentId)
@@ -70,6 +71,7 @@ func (s *studentService) AddStudent(request *model.StudentAddRequest) error {
 		return err
 	}
 	if countReference > 0 {
+		s.log.Warn("reference_id already exists")
 		return exception.NewError(409, "reference_id already exists")
 	}
 	if err := s.userRepository.Save(&entity.User{

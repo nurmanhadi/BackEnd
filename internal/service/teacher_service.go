@@ -51,7 +51,7 @@ func (s *teacherService) AddTeacher(request model.TeacherAddRequest) error {
 		return err
 	}
 	if countNip > 0 {
-		s.log.Warn("nip alradry exists")
+		s.log.Warn("nip already exists")
 		return exception.NewError(409, "nip already exists")
 	}
 	teacherId := uuid.NewString()
@@ -66,6 +66,7 @@ func (s *teacherService) AddTeacher(request model.TeacherAddRequest) error {
 		return err
 	}
 	if countIdentifier > 0 {
+		s.log.Warn("identifier already exists")
 		return exception.NewError(409, "identifier already exists")
 	}
 	countReference, err := s.userRepository.CountByReferenceId(teacherId)
@@ -74,6 +75,7 @@ func (s *teacherService) AddTeacher(request model.TeacherAddRequest) error {
 		return err
 	}
 	if countReference > 0 {
+		s.log.Warn("reference_id already exists")
 		return exception.NewError(409, "reference_id already exists")
 	}
 	if err := s.userRepository.Save(&entity.User{

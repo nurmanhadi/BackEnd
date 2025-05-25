@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/compress"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/monitor"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -32,6 +33,12 @@ func (m *MiddlewareConfig) Application() {
 	m.App.Use(compress.New(compress.Config{
 		Level: compress.LevelBestSpeed,
 	}))
+	m.App.Use(cors.New(cors.Config{
+		AllowOrigins:     "*",
+		AllowCredentials: false,
+		AllowMethods:     "GET, POST, PUT, DELETE",
+		AllowHeaders:     "Content-Type, Accept, Origin",
+	}))
 }
 func (m *MiddlewareConfig) Auth() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
@@ -46,6 +53,8 @@ func (m *MiddlewareConfig) Auth() fiber.Handler {
 			return exception.NewError(401, err.Error())
 		}
 		ctx.Locals("id", jwt.Id)
+		ctx.Locals("reference_id", jwt.RerefenceId)
+		ctx.Locals("role", jwt.Role)
 		return ctx.Next()
 	}
 }

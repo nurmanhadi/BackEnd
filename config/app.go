@@ -25,6 +25,7 @@ type Bootstrap struct {
 func New(config *Bootstrap) { // dependency injection
 	// repository
 	userRepository := repository.NewUserRepository(config.DB)
+	adminRepository := repository.NewAdminRepository(config.DB)
 	studentRepository := repository.NewStudentRepository(config.DB)
 	teacherRepository := repository.NewTeacherRepository(config.DB)
 	classRepository := repository.NewClassRepository(config.DB)
@@ -34,6 +35,7 @@ func New(config *Bootstrap) { // dependency injection
 	gradeRepository := repository.NewGradeRepository(config.DB)
 
 	// service
+	adminService := service.NewAdminService(adminRepository, userRepository, config.Validation, config.Log)
 	studentService := service.NewStudentService(studentRepository, userRepository, config.Validation, config.Log)
 	authService := service.NewAuthService(userRepository, config.Validation, config.Log, config.Viper)
 	teacherService := service.NewTeacherService(teacherRepository, userRepository, config.Validation, config.Log)
@@ -44,6 +46,7 @@ func New(config *Bootstrap) { // dependency injection
 	gradeService := service.NewGradeService(gradeRepository, studentRepository, subjectRepository, config.Validation, config.Log)
 
 	// handler
+	adminHandler := handler.NewAdminHandler(adminService)
 	studentHandler := handler.NewStudentHandler(studentService)
 	authHandler := handler.NewAuthHandler(authService)
 	teacherHadnler := handler.NewTeacherHandler(teacherService)
@@ -60,7 +63,6 @@ func New(config *Bootstrap) { // dependency injection
 		Viper: config.Viper,
 	}
 	middleware.Application()
-	middleware.Auth()
 
 	// routes
 	route := &router.RouteConfig{
@@ -73,6 +75,8 @@ func New(config *Bootstrap) { // dependency injection
 		ScheduleHandler:   scheduleHandler,
 		AttendanceHandler: attendaceHandler,
 		GradeHandler:      gradeHandler,
+		AdminHandler:      adminHandler,
+		AuthGuard:         &middleware,
 	}
 	route.Setup()
 }
