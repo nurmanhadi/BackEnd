@@ -1,0 +1,10 @@
+DROP TABLE class_subjects;
+CREATE TABLE class_subjects (
+    id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    class_id INT NOT NULL,
+    subject_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_class_subjects_classes FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_class_subjects_subjects FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE ON UPDATE CASCADE
+);

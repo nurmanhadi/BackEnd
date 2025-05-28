@@ -8,5 +8,5 @@ type Teacher struct {
 	Name      string    `json:"name"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
-	Class     *Class    `json:"class"`
+	Subjects  []Subject `json:"subjects"`
 }

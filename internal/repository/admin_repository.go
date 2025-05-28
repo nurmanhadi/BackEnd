@@ -15,6 +15,7 @@ type AdminRepository interface {
 	CountById(adminId string) (int64, error)
 	CountUsername(username string) (int64, error)
 	FindAll() ([]entity.Admin, error)
+	Delete(adminId string) error
 }
 type adminRepository struct {
 	db *gorm.DB
@@ -47,7 +48,7 @@ func (r *adminRepository) FindUsername(username string) (*entity.Admin, error) {
 }
 func (r *adminRepository) CountById(adminId string) (int64, error) {
 	var count int64
-	err := r.db.Model(&entity.Teacher{}).Where("id = ?", adminId).Count(&count).Error
+	err := r.db.Model(&entity.Admin{}).Where("id = ?", adminId).Count(&count).Error
 	if err != nil {
 		return 0, err
 	}
@@ -55,7 +56,7 @@ func (r *adminRepository) CountById(adminId string) (int64, error) {
 }
 func (r *adminRepository) CountUsername(username string) (int64, error) {
 	var count int64
-	err := r.db.Model(&entity.Teacher{}).Where("username = ?", username).Count(&count).Error
+	err := r.db.Model(&entity.Admin{}).Where("username = ?", username).Count(&count).Error
 	if err != nil {
 		return 0, err
 	}
@@ -68,4 +69,7 @@ func (r *adminRepository) FindAll() ([]entity.Admin, error) {
 		return nil, err
 	}
 	return admins, nil
+}
+func (r *adminRepository) Delete(adminId string) error {
+	return r.db.Where("id = ?", adminId).Delete(&entity.Admin{}).Error
 }

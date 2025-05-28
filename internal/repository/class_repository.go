@@ -27,7 +27,7 @@ func (r *classRepository) Save(class entity.Class) error {
 }
 func (r *classRepository) FindById(classId int) (*entity.Class, error) {
 	class := new(entity.Class)
-	if err := r.db.Where("id = ?", classId).First(&class).Error; err != nil {
+	if err := r.db.Where("id = ?", classId).Preload("Students").Preload("ClassSubject").First(&class).Error; err != nil {
 		return nil, err
 	}
 	return class, nil

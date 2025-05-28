@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"errors"
+	"fmt"
 	"liva/internal/service"
 	"liva/pkg/exception"
 	"strings"
@@ -40,17 +41,21 @@ func (m *MiddlewareConfig) Application() {
 		AllowHeaders:     "Content-Type, Accept, Origin",
 	}))
 }
-func (m *MiddlewareConfig) Auth() fiber.Handler {
+func (m *MiddlewareConfig) Auth(role string) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		tokenString, err := getTokenFromHeader(ctx)
 		if err != nil {
 			m.Log.WithField("error", err).Warn("failed get token from header")
 			return exception.NewError(401, err.Error())
 		}
-		jwt, err := service.JwtVerifyToken(tokenString, []byte(viper.GetString("jwt.key")))
+		jwt, err := service.JwtVerifyToken(tokenString, []byte(m.Viper.GetString("jwt.key")))
 		if err != nil {
 			m.Log.WithField("error", err).Warn("failed verify jwt token")
 			return exception.NewError(401, err.Error())
+		}
+		if jwt.Role != role {
+			m.Log.WithField("error", err).Warn("unable role")
+			return exception.NewError(401, fmt.Sprintf("only access for %s", role))
 		}
 		ctx.Locals("id", jwt.Id)
 		ctx.Locals("reference_id", jwt.RerefenceId)

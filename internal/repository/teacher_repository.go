@@ -39,7 +39,7 @@ func (r *teacherRepository) FindAll() ([]entity.Teacher, error) {
 }
 func (r *teacherRepository) FindById(teacherId string) (*entity.Teacher, error) {
 	teacher := new(entity.Teacher)
-	err := r.db.Where("id = ?", teacherId).First(&teacher).Error
+	err := r.db.Where("id = ?", teacherId).Preload("Subjects").First(&teacher).Error
 	if err != nil {
 		return nil, err
 	}

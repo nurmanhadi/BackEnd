@@ -3,22 +3,18 @@ package router
 import (
 	"liva/internal/delivery/rest/handler"
 	"liva/internal/delivery/rest/middleware"
+	"liva/pkg"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 type RouteConfig struct {
-	App               *fiber.App
-	StudentHandler    handler.StudentHandler
-	AuthHandler       handler.AuthHandler
-	TeacherHandler    handler.TeacherHandler
-	ClassHandler      handler.ClassHandler
-	SubjectHandler    handler.SubjectHandler
-	ScheduleHandler   handler.ScheduleHandler
-	AttendanceHandler handler.AttendaceHandler
-	GradeHandler      handler.GradeHandler
-	AdminHandler      handler.AdminHandler
-	AuthGuard         *middleware.MiddlewareConfig
+	App            *fiber.App
+	StudentHandler handler.StudentHandler
+	AuthHandler    handler.AuthHandler
+	TeacherHandler handler.TeacherHandler
+	AdminHandler   handler.AdminHandler
+	AuthGuard      *middleware.MiddlewareConfig
 }
 
 func (r *RouteConfig) Setup() {
@@ -27,51 +23,46 @@ func (r *RouteConfig) Setup() {
 	auth := api.Group("/auth")
 	auth.Post("/login", r.AuthHandler.UserLogin)
 
-	admin := api.Group("/admins", r.AuthGuard.Auth())
-	admin.Post("/", r.AdminHandler.AddAdmin)
-	admin.Put("/:adminId", r.AdminHandler.UpdateAdmin)
-	admin.Get("/:adminId", r.AdminHandler.FindById)
-	admin.Get("/", r.AdminHandler.FindAll)
+	admin := api.Group("/admins", r.AuthGuard.Auth(string(pkg.RoleAdmin)))
+	{
+		admin.Post("/", r.AdminHandler.CreateAdmin)
+		admin.Put("/:adminId", r.AdminHandler.UpdateAdmin)
+		admin.Get("/:adminId", r.AdminHandler.GetAdminById)
+		admin.Get("/", r.AdminHandler.GetAllAdmin)
+		admin.Delete("/:adminId", r.AdminHandler.DeleteAdmin)
 
-	student := api.Group("/students", r.AuthGuard.Auth())
-	student.Get("/", r.StudentHandler.FindAllStudent)
-	student.Get("/:studentId", r.StudentHandler.FindStudentById)
-	student.Post("/", r.StudentHandler.AddStudent)
-	student.Put("/:studentId", r.StudentHandler.UpdateStudent)
+		teacher := admin.Group("/teachers")
+		teacher.Post("/", r.AdminHandler.CreateTeacher)
+		teacher.Put("/:teacherId", r.AdminHandler.UpdateTeacher)
+		teacher.Get("/", r.AdminHandler.GetAllTeacher)
+		teacher.Get("/:teacherId", r.AdminHandler.GetTeacherById)
 
-	teacher := api.Group("teachers", r.AuthGuard.Auth())
-	teacher.Post("/", r.TeacherHandler.AddTeacher)
-	teacher.Put("/:teacherId", r.TeacherHandler.UpdateTeacher)
-	teacher.Get("/:teacherId", r.TeacherHandler.FindTeacherById)
-	teacher.Get("/", r.TeacherHandler.FindAllTeacher)
+		student := admin.Group("/students")
+		student.Post("/", r.AdminHandler.CreateStudent)
+		student.Put("/:studentId", r.AdminHandler.UpdateStudent)
+		student.Get("/:studentId", r.AdminHandler.GetStudentById)
+		student.Get("/", r.AdminHandler.GetAllStudent)
 
-	class := api.Group("/classes", r.AuthGuard.Auth())
-	class.Post("/", r.ClassHandler.AddClass)
-	class.Put("/:classId", r.ClassHandler.UpdateClass)
-	class.Get("/:classId", r.ClassHandler.FindClassById)
-	class.Get("/", r.ClassHandler.FindAllClass)
+		classSubject := admin.Group("/class-subjects")
+		classSubject.Post("/", r.AdminHandler.CreateClassSubject)
+		classSubject.Post("/:classSubjectId", r.AdminHandler.DeleteClassSubject)
 
-	subject := api.Group("/subjects", r.AuthGuard.Auth())
-	subject.Post("/", r.SubjectHandler.AddSubject)
-	subject.Get("/", r.SubjectHandler.FindAll)
-	subject.Get("/:subjectId", r.SubjectHandler.FindById)
-	subject.Put("/:subjectId", r.SubjectHandler.UpdateSubject)
+		schedule := admin.Group("/schedules")
+		schedule.Post("/", r.AdminHandler.CreateSchedule)
+		schedule.Put("/:studentId", r.AdminHandler.UpdateSchedule)
+		schedule.Get("/:studentId", r.AdminHandler.GetScheduleById)
+		schedule.Get("/", r.AdminHandler.GetAllSchedule)
 
-	schadule := api.Group("/schedules", r.AuthGuard.Auth())
-	schadule.Post("/", r.ScheduleHandler.AddSchedule)
-	schadule.Put("/:scheduleId", r.ScheduleHandler.UpdateSchedule)
-	schadule.Get("/:scheduleId", r.ScheduleHandler.FindById)
-	schadule.Get("/", r.ScheduleHandler.FindAll)
+		subject := admin.Group("/subjects")
+		subject.Post("/", r.AdminHandler.CreateSubject)
+		subject.Put("/:studentId", r.AdminHandler.UpdateSubject)
+		subject.Get("/:studentId", r.AdminHandler.GetSubjectById)
+		subject.Get("/", r.AdminHandler.GetAllSubject)
 
-	attendace := api.Group("/attendances", r.AuthGuard.Auth())
-	attendace.Post("/", r.AttendanceHandler.AddAttendance)
-	attendace.Put("/:attendaceId", r.AttendanceHandler.UpdateAttendance)
-	attendace.Get("/:attendaceId", r.AttendanceHandler.FindById)
-	attendace.Get("/", r.AttendanceHandler.FindAll)
-
-	grade := api.Group("/grades", r.AuthGuard.Auth())
-	grade.Post("/", r.GradeHandler.AddGrade)
-	grade.Get("/", r.GradeHandler.FindAll)
-	grade.Get("/:gradeId", r.GradeHandler.FindById)
-	grade.Put("/:gradeId", r.GradeHandler.UpdateGrade)
+		class := admin.Group("/classes")
+		class.Post("/", r.AdminHandler.CreateClass)
+		class.Put("/:studentId", r.AdminHandler.UpdateClass)
+		class.Get("/:studentId", r.AdminHandler.GetClassById)
+		class.Get("/", r.AdminHandler.GetAllClass)
+	}
 }

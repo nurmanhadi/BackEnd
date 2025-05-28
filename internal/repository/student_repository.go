@@ -40,7 +40,7 @@ func (r *studentRepository) FindAll() ([]entity.Student, error) {
 }
 func (r *studentRepository) FindById(studentId string) (*entity.Student, error) {
 	student := new(entity.Student)
-	err := r.db.Where("id = ?", studentId).First(&student).Error
+	err := r.db.Where("id = ?", studentId).Preload("Class").First(&student).Error
 	if err != nil {
 		return nil, err
 	}

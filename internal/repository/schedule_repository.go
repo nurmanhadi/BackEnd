@@ -44,7 +44,7 @@ func (r *scheduleRepository) FindAll() ([]entity.Schedule, error) {
 }
 func (r *scheduleRepository) FindById(scheduleId int64) (*entity.Schedule, error) {
 	schedule := new(entity.Schedule)
-	err := r.db.Where("id = ?", scheduleId).First(&schedule).Error
+	err := r.db.Where("id = ?", scheduleId).Preload("Attendaces").First(&schedule).Error
 	if err != nil {
 		return nil, err
 	}

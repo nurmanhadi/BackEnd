@@ -29,7 +29,7 @@ func (r *subjectRepository) Updates(subjectId int, request model.SubjectUpdateRe
 }
 func (r *subjectRepository) FindById(subjectId int) (*entity.Subject, error) {
 	subject := new(entity.Subject)
-	err := r.db.Where("id = ?", subjectId).First(&subject).Error
+	err := r.db.Where("id = ?", subjectId).Preload("Teacher").Preload("Schedules").Preload("ClassSubject.Class").First(&subject).Error
 	if err != nil {
 		return nil, err
 	}
